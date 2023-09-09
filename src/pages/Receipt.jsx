@@ -5,7 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Pdf from 'react-to-pdf';
 import ReceiptTemplate from '@/components/receipt/design';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import axios from 'axios';
+import ReceiptTable from '@/components/receipt/receiptTable';
 
 const ref = React.createRef();
 
@@ -110,7 +113,13 @@ const Receipt = () => {
   ];
 
   return (
-    <main>
+    <Tabs defaultValue='generate'>
+          <TabsList>
+            <TabsTrigger value='generate'>Generate Receipt</TabsTrigger>
+            <TabsTrigger value='list'>List Receipt</TabsTrigger>
+          </TabsList>
+          <TabsContent value='generate'>
+          <main>
       <h1 className='font-bold text-3xl uppercase mt-4 mb-4'>
         Customer Receipt
       </h1>
@@ -280,6 +289,11 @@ const Receipt = () => {
         outputArray={outputArray}
       />
     </main>
+          </TabsContent>
+          <TabsContent value='list'>
+            <ReceiptTable/>
+          </TabsContent>
+        </Tabs>
   );
 };
 
