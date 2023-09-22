@@ -18,10 +18,13 @@ const AddService = () => {
 
     e.preventDefault();
 
-    await axios.post(`${import.meta.env.VITE_HOST}/api/v1/services/add`, {
-      title,
-      price,
-    });
+    await axios.post(
+      `https://splendido-apiv1.onrender.com/api/v1/services/add`,
+      {
+        title,
+        price,
+      }
+    );
 
     toast('Added');
 

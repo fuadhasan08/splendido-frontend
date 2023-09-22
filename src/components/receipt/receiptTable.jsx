@@ -7,7 +7,9 @@ const ReceiptTable = () => {
   const [receiptList, setReceiptList] = useState([]);
 
   const fetchData = async () => {
-    const data = await axios.get(`${import.meta.env.VITE_HOST}/api/v1/receipt`);
+    const data = await axios.get(
+      `https://splendido-apiv1.onrender.com/api/v1/receipt`
+    );
     setReceiptList(data.data);
   };
 
