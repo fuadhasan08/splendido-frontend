@@ -58,16 +58,19 @@ const Receipt = () => {
     e.preventDefault();
 
     if (fullName && phone && address && service && customFields && chairNo) {
-      await axios.post(`${import.meta.env.VITE_HOST}/api/v1/receipt/add`, {
-        fullName,
-        phone,
-        address,
-        email,
-        service,
-        customFields,
-        subTotal,
-        chairNo,
-      });
+      await axios.post(
+        `https://splendido-apiv1.onrender.com/api/v1/receipt/add`,
+        {
+          fullName,
+          phone,
+          address,
+          email,
+          service,
+          customFields,
+          subTotal,
+          chairNo,
+        }
+      );
 
       setFormData({
         fullName: '',
@@ -131,7 +134,7 @@ const Receipt = () => {
 
   const fetchData = async () => {
     const data = await axios.get(
-      `${import.meta.env.VITE_HOST}/api/v1/services/`
+      `https://splendido-apiv1.onrender.com/api/v1/services/`
     );
     setServices(data.data);
   };

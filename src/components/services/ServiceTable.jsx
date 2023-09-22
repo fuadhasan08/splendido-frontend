@@ -9,7 +9,7 @@ const ServiceTable = () => {
 
   const fetchData = async () => {
     const data = await axios.get(
-      `${import.meta.env.VITE_HOST}/api/v1/services/`
+      `https://splendido-apiv1.onrender.com/api/v1/services/`
     );
     setServices(data.data);
   };
@@ -21,7 +21,7 @@ const ServiceTable = () => {
   const handleDelete = async (id) => {
     const conf = confirm('Are you sure?');
     if (conf) {
-      await axios.post(`${import.meta.env.VITE_HOST}/api/v1/services/delete`, {
+      await axios.post(`https://splendido-apiv1.onrender.com/api/v1/services/delete`, {
         id,
       });
       fetchData();
