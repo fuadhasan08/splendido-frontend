@@ -117,7 +117,7 @@
 }
 
 #invoice-POS #top {
-  min-height: 100px;
+  min-height: 60px;
 }
 #invoice-POS #mid {
   min-height: 80px;
@@ -126,12 +126,10 @@
   min-height: 50px;
 }
 
-#invoice-POS #top .logo {
-  height: 60px;
-  width: 100px;
-  background: url(https://i.ibb.co/Hpcnkyj/logo-bh.png) no-repeat;
-  background-size: contain;
-  background-position: center;
+#invoice-POS #top .logo img {
+  height: 62px;
+  width: 224px;
+  margin-bottom: 5px;
 }
 
 #invoice-POS .info {
@@ -150,17 +148,17 @@
 }
 
 #invoice-POS .tabletitle {
-  font-size: 0.5em;
+  font-size: 0.7em;
   background: #eee;
 }
 #invoice-POS .service {
   border-bottom: 1px solid #eee;
 }
 #invoice-POS .item {
-  width: 24mm;
+  width: 50mm;
 }
 #invoice-POS .itemtext {
-  font-size: 0.5em;
+  font-size: 0.7em;
 }
 
 #invoice-POS #legalcopy {

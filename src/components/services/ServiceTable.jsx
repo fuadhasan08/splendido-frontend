@@ -1,28 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
-} from '@tanstack/react-table';
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
-import { Input } from '../ui/input';
 import axios from 'axios';
-
 import { toast } from 'react-toastify';
+import FilteredTable from '../ui/FilteredTable';
+import { AiFillDelete } from 'react-icons/ai';
 
 const ServiceTable = () => {
-  const [filtering, setFiltering] = useState('');
-
   const [serviceList, setServices] = useState([]);
 
   const fetchData = async () => {
@@ -36,12 +18,17 @@ const ServiceTable = () => {
     fetchData();
   }, []);
 
-  const handleClick = async (id) => {
-    await axios.post(`${import.meta.env.VITE_HOST}/api/v1/services/delete`, {
-      id,
-    });
-    fetchData();
-    toast(`Service with id:${id} Deleted`);
+  const handleDelete = async (id) => {
+    const conf = confirm('Are you sure?');
+    if (conf) {
+      await axios.post(`${import.meta.env.VITE_HOST}/api/v1/services/delete`, {
+        id,
+      });
+      fetchData();
+      toast(`Service with id:${id} Deleted`);
+    } else {
+      toast(`Operation cancelled`);
+    }
   };
 
   const columns = [
@@ -64,80 +51,16 @@ const ServiceTable = () => {
         const id = parseFloat(row.getValue('id'));
 
         return (
-          <div className='' onClick={() => handleClick(id)}>
-            {id}
-          </div>
+          <AiFillDelete
+            onClick={() => handleDelete(id)}
+            className='cursor-pointer text-pink-600'
+          />
         );
       },
     },
   ];
 
-  const table = useReactTable({
-    data: serviceList,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter: filtering,
-    },
-    onGlobalFilterChange: setFiltering,
-  });
-
-  return (
-    <div className='rounded-md'>
-      <div className='flex items-center py-4'>
-        <Input
-          placeholder='Filter emails...'
-          value={filtering}
-          onChange={(event) => setFiltering(event.target.value)}
-          className='max-w-sm'
-        />
-      </div>
-      {console.log(serviceList)}
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className='h-24 text-center'>
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  );
+  return <FilteredTable columns={columns} data={serviceList} />;
 };
 
 export default ServiceTable;

@@ -1,35 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
-} from '@tanstack/react-table';
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
-import { Input } from '../ui/input';
 import axios from 'axios';
-
-import { toast } from 'react-toastify';
+import moment from 'moment';
+import FilteredTable from '../ui/FilteredTable';
 
 const ReceiptTable = () => {
-  const [filtering, setFiltering] = useState('');
-
-  const [serviceList, setServices] = useState([]);
+  const [receiptList, setReceiptList] = useState([]);
 
   const fetchData = async () => {
-    const data = await axios.get(
-      `${import.meta.env.VITE_HOST}/api/v1/receipt`
-    );
-    setServices(data.data);
+    const data = await axios.get(`${import.meta.env.VITE_HOST}/api/v1/receipt`);
+    setReceiptList(data.data);
   };
 
   useEffect(() => {
@@ -44,119 +23,79 @@ const ReceiptTable = () => {
     {
       accessorKey: 'phone',
       header: 'Phone',
+      cell: ({ row }) => {
+        let phone = row.getValue('phone');
+
+        return <a href={`tel:${phone}`}>{phone}</a>;
+      },
     },
-    {
-      accessorKey: 'address',
-      header: 'Address',
-    },
-    {
-      accessorKey: 'email',
-      header: 'Email',
-    },
+    // {
+    //   accessorKey: 'address',
+    //   header: 'Address',
+    // },
     {
       accessorKey: 'services',
       header: 'Services',
       cell: ({ row }) => {
-        const services = row.getValue('services');
+        let services = row.getValue('services');
+        services = JSON.parse(services);
 
-        return (
-          <div className='' >
-            {JSON.parse(services).map((item) => {
-              <p>{item}</p>
-            })}
-          </div>
-        );
+        const mergedTitles = services.reduce((titleString, obj, index) => {
+          if (obj.label !== undefined && obj.label !== 'Custom') {
+            if (index !== 0) {
+              titleString += ', ';
+            }
+            titleString += obj.label;
+          }
+          return titleString;
+        }, '');
+
+        return <p>{mergedTitles}</p>;
       },
     },
     {
       accessorKey: 'customFields',
-      header: 'CustomFields',
+      header: 'Custom Services',
       cell: ({ row }) => {
         let customFields = row.getValue('customFields');
-        customFields = JSON.parse(customFields)
+        customFields = JSON.parse(customFields);
 
-        let str = ""
+        const mergedTitles = customFields.reduce((titleString, obj, index) => {
+          if (obj.customServiceTitle !== '') {
+            if (index !== 0) {
+              titleString += ', ';
+            }
+            titleString += obj.customServiceTitle;
+          } else {
+            titleString = 'none';
+          }
+          return titleString;
+        }, '');
 
-        customFields.map(item => {
-          str += item.cus
-        })
+        return <p>{mergedTitles}</p>;
+      },
+    },
+    {
+      accessorKey: 'subtotal',
+      header: 'Subtotal',
+    },
+    {
+      accessorKey: 'chairNo',
+      header: 'Chair',
+    },
+    {
+      accessorKey: 'date',
+      header: 'Date',
+      cell: ({ row }) => {
+        let date = row.getValue('date');
+        let formatedDate = moment(date).format('lll');
 
-
-        return (
-          <div className='' >
-            Hllo
-          </div>
-        );
+        return <p>{formatedDate}</p>;
       },
     },
   ];
 
-  const table = useReactTable({
-    data: serviceList,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter: filtering,
-    },
-    onGlobalFilterChange: setFiltering,
-  });
-
-  return (
-    <div className='rounded-md'>
-      <div className='flex items-center py-4'>
-        <Input
-          placeholder='Filter emails...'
-          value={filtering}
-          onChange={(event) => setFiltering(event.target.value)}
-          className='max-w-sm'
-        />
-      </div>
-
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className='h-24 text-center'>
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  );
+  return <FilteredTable columns={columns} data={receiptList} />;
 };
 
 export default ReceiptTable;
