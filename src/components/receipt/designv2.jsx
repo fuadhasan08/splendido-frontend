@@ -1,21 +1,25 @@
 import useSubtotal from '@/lib/useSubtotal';
 import React from 'react';
 import moment from 'moment';
+import { StretchVerticalIcon } from 'lucide-react';
 
 const ReceiptTemplate = React.forwardRef(({ fieldValues }, ref) => {
-  const {
+  let {
     fullName,
     phone,
     address,
     email,
-    service,
+    services,
     customFields,
     discount,
     tax,
     chairNo,
   } = fieldValues;
 
-  const subTotal = useSubtotal(service, customFields, discount, tax);
+  services = JSON.parse(services);
+  customFields = JSON.parse(customFields);
+
+  const subTotal = useSubtotal(services, customFields, discount, tax);
 
   return (
     <div id='invoice-POS' className='font-fira' ref={ref}>
@@ -36,9 +40,7 @@ const ReceiptTemplate = React.forwardRef(({ fieldValues }, ref) => {
             {address && <span className='block'>Address: {address}</span>}
             {phone && <span className='block'>Phone: {phone}</span>}
             {email && <span className='block'>Email: {email}</span>}
-            {chairNo && (
-              <span className='block'>Chair No: {chairNo.value}</span>
-            )}
+            {chairNo && <span className='block'>Chair No: {chairNo}</span>}
           </p>
         </div>
       </div>
@@ -59,25 +61,26 @@ const ReceiptTemplate = React.forwardRef(({ fieldValues }, ref) => {
             </thead>
 
             <tbody>
-              {service
-                .filter((item) => item.value !== 'custom')
-                .map((serv, idx) => {
-                  if (serv.value !== 'custom') {
-                    return (
-                      <tr className='service' key={idx}>
-                        <td className='tableitem'>
-                          <p className='itemtext'>{serv.label}</p>
-                        </td>
+              {services &&
+                services
+                  .filter((item) => item.value !== 'custom')
+                  .map((serv, idx) => {
+                    if (serv.value !== 'custom') {
+                      return (
+                        <tr className='service' key={idx}>
+                          <td className='tableitem'>
+                            <p className='itemtext'>{serv.label}</p>
+                          </td>
 
-                        <td className='tableitem'>
-                          <p className='itemtext'>{serv.price}</p>
-                        </td>
-                      </tr>
-                    );
-                  }
-                })}
+                          <td className='tableitem'>
+                            <p className='itemtext'>{serv.price}</p>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  })}
 
-              {service.some((item) => item?.value == 'custom') && (
+              {services && services.some((item) => item?.value == 'custom') && (
                 <>
                   {customFields.map((field) => {
                     const { id, customServiceTitle, customServicePrice, qty } =

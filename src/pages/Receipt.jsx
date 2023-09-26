@@ -32,6 +32,10 @@ const Receipt = () => {
   const [nextId, setNextId] = useState(2);
   const [isDiscountEnabled, setIsDiscountEnabled] = useState(false);
   const [isTaxEnabled, setIsTaxEnabled] = useState(false);
+  const [isExistingCustomer, setIsExistingCustomer] = useState(false);
+
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
 
   const handlePrint = useReactToPrint({
     content: () => ref.current,
@@ -58,19 +62,18 @@ const Receipt = () => {
     e.preventDefault();
 
     if (fullName && phone && address && service && customFields && chairNo) {
-      await axios.post(
-        `https://splendido-apiv1.onrender.com/api/v1/receipt/add`,
-        {
-          fullName,
-          phone,
-          address,
-          email,
-          service,
-          customFields,
-          subTotal,
-          chairNo,
-        }
-      );
+      await axios.post(`${import.meta.env.VITE_HOST}/api/v1/receipt/add`, {
+        fullName,
+        phone,
+        address,
+        email,
+        service,
+        customFields,
+        discount,
+        tax,
+        subTotal,
+        chairNo,
+      });
 
       setFormData({
         fullName: '',
@@ -90,6 +93,10 @@ const Receipt = () => {
     } else {
       toast('Please Fill All Field');
     }
+
+    setIsDiscountEnabled(false);
+    setIsTaxEnabled(false);
+    setIsExistingCustomer(false);
   };
 
   const handleInputChange = (e) => {
@@ -134,7 +141,7 @@ const Receipt = () => {
 
   const fetchData = async () => {
     const data = await axios.get(
-      `https://splendido-apiv1.onrender.com/api/v1/services/`
+      `${import.meta.env.VITE_HOST}/api/v1/services/`
     );
     setServices(data.data);
   };
@@ -152,6 +159,37 @@ const Receipt = () => {
     ...outputArray,
   ];
 
+  useEffect(() => {
+    if (query.trim() !== '') {
+      axios
+        .get(`${import.meta.env.VITE_HOST}/api/v1/receipt/get?name=${query}`)
+        .then((response) => {
+          setResults(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching data:', error);
+        });
+    } else {
+      setResults([]);
+    }
+  }, [query]);
+
+  const handleItemClick = (item) => {
+    const { fullName, phone, address, email } = item;
+
+    setFormData({
+      ...formData,
+      fullName,
+      phone,
+      address,
+      email,
+    });
+
+    setResults([]);
+    setQuery('');
+    setIsExistingCustomer(false);
+  };
+
   return (
     <Tabs defaultValue='generate'>
       <TabsList>
@@ -164,6 +202,49 @@ const Receipt = () => {
             Customer Receipt
           </h1>
           <form>
+            <div className='flex-1 my-4'>
+              <div className='flex items-center'>
+                <Label htmlFor='isExisting' className='mr-2 cursor-pointer'>
+                  Existing Customer?
+                </Label>
+                <input
+                  name='isExisting'
+                  id='isExisting'
+                  type='checkbox'
+                  placeholder='Existing'
+                  onChange={(e) => {
+                    setIsExistingCustomer((prev) => !prev);
+                  }}
+                  required={true}
+                  className='cursor-pointer'
+                  checked={isExistingCustomer}
+                />
+              </div>
+              {isExistingCustomer && (
+                <div className='my-4'>
+                  <Input
+                    type='text'
+                    placeholder='Enter Customer Name or Phone Number'
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                  {results.length > 0 && (
+                    <ul className='shadow-lg border border-gray-300 rounded-md mt-1'>
+                      {results.map((item) => (
+                        <li
+                          key={item.id}
+                          onClick={() => handleItemClick(item)}
+                          className='py-2.5 cursor-pointer hover:bg-blue-100 pl-5'
+                        >
+                          {item.fullName}
+                          <span>{` (${item.phone}) `}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
             <div className='flex gap-x-8 mb-4'>
               <div className='flex-1'>
                 <Label htmlFor='fullName'>Full Name</Label>
@@ -378,7 +459,7 @@ const Receipt = () => {
                       setIsTaxEnabled((prev) => !prev);
                     }}
                     required={true}
-                    value={isTaxEnabled}
+                    checked={isTaxEnabled}
                     className='cursor-pointer'
                   />
                 </div>
@@ -415,8 +496,8 @@ const Receipt = () => {
                       setIsDiscountEnabled((prev) => !prev);
                     }}
                     required={true}
-                    value={isDiscountEnabled}
                     className='cursor-pointer'
+                    checked={isDiscountEnabled}
                   />
                 </div>
                 {isDiscountEnabled && (
@@ -449,18 +530,12 @@ const Receipt = () => {
             </Button>
           </form>
           <div id='printable-component'>
-            <ReceiptTemplate
-              ref={ref}
-              fieldValues={formData}
-              outputArray={outputArray}
-              isTaxEnabled={isTaxEnabled}
-              isDiscountEnabled={isDiscountEnabled}
-            />
+            <ReceiptTemplate ref={ref} fieldValues={formData} />
           </div>
         </main>
       </TabsContent>
       <TabsContent value='list'>
-        <ReceiptTable />
+        <ReceiptTable handlePrint={handlePrint} />
       </TabsContent>
     </Tabs>
   );

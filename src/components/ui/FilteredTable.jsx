@@ -18,29 +18,24 @@ import {
 import { Input } from './input';
 
 const FilteredTable = ({ data, columns }) => {
-  const [filtering, setFiltering] = useState('');
-
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter: filtering,
-    },
-    onGlobalFilterChange: setFiltering,
+    state: {},
   });
 
   return (
     <div className='rounded-md'>
-      <div className='flex items-center py-4'>
+      {/* <div className='flex items-center py-4'>
         <Input
           placeholder='Filter Data...'
           value={filtering}
           onChange={(event) => setFiltering(event.target.value)}
           className='max-w-sm'
         />
-      </div>
+      </div> */}
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
